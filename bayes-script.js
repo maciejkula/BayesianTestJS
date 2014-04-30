@@ -17,8 +17,14 @@ BetaModel.prototype.getPDF = function (noPoints) {
     var pdf = [];
     var distribution = this.distribution();
     for (var i=0; i < noPoints; i++) {
-	pdf.push({'x': i/noPoints, 'y': distribution.pdf(i/noPoints)});
+	var val = distribution.pdf(i/noPoints);
+	// Get rid of density singularities for plotting
+	if (val == Number.POSITIVE_INFINITY) {
+	    val = 0;
+	};
+	pdf.push({'x': i/noPoints, 'y': val});
     };
+    console.log(pdf);
     return pdf;
 };
 
@@ -34,10 +40,12 @@ BetaModel.prototype.update = function (successes, failures) {
 
 // -----------------------------------------------
 
-var pdfPlot = function(alpha, beta) {
-
+var PDFPlot = function(alpha, beta) {
     this.priorBeta = new BetaModel(alpha, beta);
     this.posteriorBeta = new BetaModel(alpha, beta);
+};
+
+PDFPlot.prototype.getElements = function () {
 
     var priorData = this.priorBeta.getPDF(100);
     var posteriorData = this.posteriorBeta.getPDF(100);
@@ -47,15 +55,12 @@ var pdfPlot = function(alpha, beta) {
     var width = 960 - margin.left - margin.right;
     var height = 500 - margin.top - margin.bottom;
 
-    this.width = width;
-    this.height = height;
-
     var x = d3.scale.linear()
 	.domain(d3.extent(allData, function(d) { return d.x; }))
     	.range([0, width]);
 
     var y = d3.scale.linear()
-	.domain(d3.extent(allData, function(d) { return d.y; }))
+	.domain([0, d3.max(allData, function(d) { return d.y; })+1])
 	.range([height, 0]);
 
     var xAxis = d3.svg.axis()
@@ -66,11 +71,6 @@ var pdfPlot = function(alpha, beta) {
 	.scale(y)
 	.orient("left");
 
-    this.x = x;
-    this.y = y;
-    this.xAxis = xAxis;
-    this.yAxis = yAxis;
-
     var priorLine = d3.svg.line()
 	.x(function(d) { return x(d.x); })
 	.y(function(d) { return y(d.y); });
@@ -79,20 +79,37 @@ var pdfPlot = function(alpha, beta) {
 	.x(function(d) { return x(d.x); })
 	.y(function(d) { return y(d.y); });
 
+    return {
+	"margin": margin,
+	"width": width,
+	"height": height,
+	"xAxis": xAxis,
+	"yAxis": yAxis,
+	"priorLine": priorLine,
+	"posteriorLine": posteriorLine,
+	"priorData": priorData,
+	"posteriorData": posteriorData
+    };
+};
+
+PDFPlot.prototype.draw = function () {
+    var d = this.getElements();
+    console.log(d);
+    
     var svg = d3.select("body").append("svg")
-	.attr("width", width + margin.left + margin.right)
-	.attr("height", height + margin.top + margin.bottom)
+	.attr("width", d.width + d.margin.left + d.margin.right)
+	.attr("height", d.height + d.margin.top + d.margin.bottom)
 	.append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	.attr("transform", "translate(" + d.margin.left + "," + d.margin.top + ")");
 
     svg.append("g")
 	.attr("class", "x axis")
-	.attr("transform", "translate(0," + height + ")")
-	.call(xAxis);
+	.attr("transform", "translate(0," + d.height + ")")
+	.call(d.xAxis);
 
     svg.append("g")
 	.attr("class", "y axis")
-	.call(yAxis)
+	.call(d.yAxis)
 	.append("text")
 	.attr("transform", "rotate(-90)")
 	.attr("y", 6)
@@ -101,98 +118,100 @@ var pdfPlot = function(alpha, beta) {
 	.text("Density");
 
     svg.append("path")
-	.datum(priorData)
+	.datum(d.priorData)
 	.attr("class", "line")
-	.attr("d", priorLine)
+	.attr("d", d.priorLine)
 	.attr("id", "priorLine");
 
     svg.append("path")
-	.datum(posteriorData)
+	.datum(d.posteriorData)
 	.attr("class", "line")
-	.attr("d", posteriorLine)
+	.attr("d", d.posteriorLine)
 	.attr("id", "posteriorLine");
 
-    this.priorLine = priorLine;
-    this.posteriorLine = posteriorLine;
     this.svg = svg;
 };
 
-pdfPlot.prototype.redraw = function () {
+PDFPlot.prototype.redraw = function () {
 
-    var priorData = this.priorBeta.getPDF(100);
-    var posteriorData = this.posteriorBeta.getPDF(100);
-    var allData = priorData.concat(posteriorData);
-
-    // var priorLine = this.priorLine;
-    // var posteriorLine = this.posteriorLine;
-
-
-
-    var width = this.width;
-    var height = this.height;
-
-    var x = d3.scale.linear()
-	.domain(d3.extent(allData, function(d) { return d.x; }))
-    	.range([0, width]);
-
-    var y = d3.scale.linear()
-	.domain(d3.extent(allData, function(d) { return d.y; }))
-	.range([height, 0]);
-
-    var xAxis = d3.svg.axis()
-	.scale(x)
-	.orient("bottom");
-
-    var yAxis = d3.svg.axis()
-	.scale(y)
-	.orient("left");
-
-    var priorLine = d3.svg.line()
-	.x(function(d) { return x(d.x); })
-	.y(function(d) { return y(d.y); });
-
-    var posteriorLine = d3.svg.line()
-	.x(function(d) { return x(d.x); })
-	.y(function(d) { return y(d.y); });
+    var d = this.getElements();
 
     this.svg.select('#priorLine')
-	.datum(priorData)
+	.datum(d.priorData)
 	.transition()
 	.duration(1000)
-        .attr("d", priorLine);
+        .attr("d", d.priorLine);
 
     this.svg.select('#posteriorLine')
-	.datum(posteriorData)
+	.datum(d.posteriorData)
 	.transition()
 	.duration(1000)
-        .attr("d", posteriorLine);
+        .attr("d", d.posteriorLine);
 
     this.svg.select('.y.axis')
 	.transition()
-	.duration(10000)
-	.call(yAxis);
+	.duration(1000)
+	.call(d.yAxis);
 
     this.svg.select('.x.axis')
 	.transition()
-	.call(xAxis);
-
-
+	.call(d.xAxis);
 };
 
-pdfPlot.prototype.update = function (successes, failures) {
+PDFPlot.prototype.updatePrior = function (alpha, beta) {
+    this.priorBeta = new BetaModel(alpha, beta);
+    this.posteriorBeta = new BetaModel(alpha, beta);
+};
+
+PDFPlot.prototype.updatePosterior = function (successes, failures) {
     this.posteriorBeta.update(successes, failures);
-    this.redraw();
 };
 
-var pdfplot = new pdfPlot(10, 100);
-pdfplot.update(10000, 10000);
 
-var betaD = new BetaModel(10, 100);
+var getNumber = function (x, def) {
+    return Number(x);    
+};
 
-// console.log(betaD.getRvs(10));
 
-// betaD.update(100, 10);
-// console.log(betaD.getRvs(10));
+var getInputs = function () {
+    
+    var priorAlpha = getNumber(document.getElementById("priorAlpha").value, 10);
+    var priorBeta = getNumber(document.getElementById("priorBeta").value, 10);
+    var controlSuccesses = getNumber(document.getElementById("controlSuccesses").value, 10);
+    var controlFailures = getNumber(document.getElementById("controlFailures").value, 10);
+    return {
+	"priorAlpha": priorAlpha,
+	"priorBeta": priorBeta,
+	"controlSuccesses": controlSuccesses,
+	"controlFailures": controlFailures
+    };
+};
+
+var initializePlots = function() {
+    var inputs = getInputs();
+    pdfplot = new PDFPlot(inputs.priorAlpha, inputs.priorBeta);
+    pdfplot.draw();
+};
+
+initializePlots();
+
+var updatePlots = function() {
+    var inputs = getInputs();
+    console.log(pdfplot);
+    pdfplot.updatePrior(inputs.priorAlpha, inputs.priorBeta);
+    pdfplot.redraw();
+    // pdfplot.updatePosterior(10000, 10000);    
+};
+
+var bindInputs = function() {
+    document.getElementById("submit").onclick = function() {
+	updatePlots();
+	console.log(getInputs());
+    };
+};
+
+
+bindInputs();
 
 },{"beta-js":2,"d3":3}],2:[function(require,module,exports){
 /*
@@ -226,6 +245,9 @@ BetaDistribution.prototype.lpdf = function(x) {
 BetaDistribution.prototype.pdf = function(x) {
     if (x < 0 || x > 1) {
 	return 0;
+    };
+    if (this.alpha == 1 && this.beta == 1) {
+		return 1;
     };
     return Math.exp(this.lpdf(x));
 };
