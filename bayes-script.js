@@ -1,4 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+"use strict";
+
 var beta = require("beta-js");
 var d3 = require("d3");
 
@@ -24,7 +26,6 @@ BetaModel.prototype.getPDF = function (noPoints) {
 	};
 	pdf.push({'x': i/noPoints, 'y': val});
     };
-    console.log(pdf);
     return pdf;
 };
 
@@ -41,15 +42,15 @@ BetaModel.prototype.update = function (successes, failures) {
 // -----------------------------------------------
 
 var PDFPlot = function(alpha, beta) {
-    this.priorBeta = new BetaModel(alpha, beta);
-    this.posteriorBeta = new BetaModel(alpha, beta);
+    this.controlBeta = new BetaModel(alpha, beta);
+    this.testBeta = new BetaModel(alpha, beta);
 };
 
 PDFPlot.prototype.getElements = function () {
 
-    var priorData = this.priorBeta.getPDF(100);
-    var posteriorData = this.posteriorBeta.getPDF(100);
-    var allData = priorData.concat(posteriorData);
+    var controlData = this.controlBeta.getPDF(100);
+    var testData = this.testBeta.getPDF(100);
+    var allData = controlData.concat(testData);
 
     var margin = {top: 20, right: 20, bottom: 30, left: 50};
     var width = 960 - margin.left - margin.right;
@@ -71,11 +72,11 @@ PDFPlot.prototype.getElements = function () {
 	.scale(y)
 	.orient("left");
 
-    var priorLine = d3.svg.line()
+    var controlLine = d3.svg.line()
 	.x(function(d) { return x(d.x); })
 	.y(function(d) { return y(d.y); });
 
-    var posteriorLine = d3.svg.line()
+    var testLine = d3.svg.line()
 	.x(function(d) { return x(d.x); })
 	.y(function(d) { return y(d.y); });
 
@@ -85,16 +86,15 @@ PDFPlot.prototype.getElements = function () {
 	"height": height,
 	"xAxis": xAxis,
 	"yAxis": yAxis,
-	"priorLine": priorLine,
-	"posteriorLine": posteriorLine,
-	"priorData": priorData,
-	"posteriorData": posteriorData
+	"testLine": testLine,
+	"controlLine": controlLine,
+	"testData": testData,
+	"controlData": controlData
     };
 };
 
 PDFPlot.prototype.draw = function () {
     var d = this.getElements();
-    console.log(d);
     
     var svg = d3.select("body").append("svg")
 	.attr("width", d.width + d.margin.left + d.margin.right)
@@ -118,16 +118,22 @@ PDFPlot.prototype.draw = function () {
 	.text("Density");
 
     svg.append("path")
-	.datum(d.priorData)
+	.style("fill", "red")
+	.datum(d.testData)
 	.attr("class", "line")
-	.attr("d", d.priorLine)
-	.attr("id", "priorLine");
+	.attr("d", d.testLine)
+	.attr("id", "testLine");
 
     svg.append("path")
-	.datum(d.posteriorData)
+	.datum(d.controlData)
 	.attr("class", "line")
-	.attr("d", d.posteriorLine)
-	.attr("id", "posteriorLine");
+	.attr("d", d.controlLine)
+	.attr("id", "controlLine");
+
+    var title = svg.append("text")
+	.attr("class", "title")
+	.attr("dy", ".71em")
+	.text(2000);
 
     this.svg = svg;
 };
@@ -136,17 +142,17 @@ PDFPlot.prototype.redraw = function () {
 
     var d = this.getElements();
 
-    this.svg.select('#priorLine')
-	.datum(d.priorData)
+    this.svg.select('#testLine')
+	.datum(d.testData)
 	.transition()
 	.duration(1000)
-        .attr("d", d.priorLine);
+        .attr("d", d.testLine);
 
-    this.svg.select('#posteriorLine')
-	.datum(d.posteriorData)
+    this.svg.select('#controlLine')
+	.datum(d.controlData)
 	.transition()
 	.duration(1000)
-        .attr("d", d.posteriorLine);
+        .attr("d", d.controlLine);
 
     this.svg.select('.y.axis')
 	.transition()
@@ -159,12 +165,14 @@ PDFPlot.prototype.redraw = function () {
 };
 
 PDFPlot.prototype.updatePrior = function (alpha, beta) {
-    this.priorBeta = new BetaModel(alpha, beta);
-    this.posteriorBeta = new BetaModel(alpha, beta);
+    this.controlBeta = new BetaModel(alpha, beta);
+    this.testBeta = new BetaModel(alpha, beta);
 };
 
-PDFPlot.prototype.updatePosterior = function (successes, failures) {
-    this.posteriorBeta.update(successes, failures);
+PDFPlot.prototype.updatePosterior = function (testSuccesses, testFailures, controlSuccesses, controlFailures) {
+    this.testBeta.update(testSuccesses, testFailures);
+    this.controlBeta.update(controlSuccesses, controlFailures);
+    console.log(this.controlBeta);
 };
 
 
@@ -179,34 +187,43 @@ var getInputs = function () {
     var priorBeta = getNumber(document.getElementById("priorBeta").value, 10);
     var controlSuccesses = getNumber(document.getElementById("controlSuccesses").value, 10);
     var controlFailures = getNumber(document.getElementById("controlFailures").value, 10);
+    var testSuccesses = getNumber(document.getElementById("testSuccesses").value, 10);
+    var testFailures = getNumber(document.getElementById("testFailures").value, 10);
+
     return {
 	"priorAlpha": priorAlpha,
 	"priorBeta": priorBeta,
 	"controlSuccesses": controlSuccesses,
-	"controlFailures": controlFailures
+	"controlFailures": controlFailures,
+	"testSuccesses": testSuccesses,
+	"testFailures": testFailures
     };
 };
 
 var initializePlots = function() {
     var inputs = getInputs();
-    pdfplot = new PDFPlot(inputs.priorAlpha, inputs.priorBeta);
+    var pdfplot = new PDFPlot(inputs.priorAlpha, inputs.priorBeta);
     pdfplot.draw();
+    window.pdfplot = pdfplot;
 };
 
 initializePlots();
 
 var updatePlots = function() {
     var inputs = getInputs();
-    console.log(pdfplot);
+    var pdfplot = window.pdfplot;
     pdfplot.updatePrior(inputs.priorAlpha, inputs.priorBeta);
+    pdfplot.updatePosterior(inputs.testSuccesses,
+			    inputs.testFailures,
+			    inputs.controlSuccesses,
+			    inputs.controlFailures);
     pdfplot.redraw();
-    // pdfplot.updatePosterior(10000, 10000);    
+
 };
 
 var bindInputs = function() {
     document.getElementById("submit").onclick = function() {
 	updatePlots();
-	console.log(getInputs());
     };
 };
 
