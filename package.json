@@ -1,0 +1,15 @@
+{
+    "name": "bayesian-ab-testing-js"
+  , "version": "0.0.1"
+  , "description": "Bayesian A/B test inference"
+  , "main": "bayes"
+  , "engines": { "node": ">= 0.4.x < 0.7.0" }
+  , "dependencies": {
+      "jStat": "0.0.2",
+      "d3": "3.4.6",
+      "beta-js": "0.0.1"
+  }
+  , "devDependencies": {
+      "browserify": "3.44.2"
+  }
+}
