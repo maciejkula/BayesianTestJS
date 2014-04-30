@@ -41,12 +41,12 @@ BetaModel.prototype.update = function (successes, failures) {
 
 // -----------------------------------------------
 
-var PDFPlot = function(alpha, beta) {
+var Plots = function(alpha, beta) {
     this.controlBeta = new BetaModel(alpha, beta);
     this.testBeta = new BetaModel(alpha, beta);
 };
 
-PDFPlot.prototype.getHistogramElements = function () {
+Plots.prototype.getHistogramElements = function () {
 
     var noSamples = 1000;
     var noBins = 50;
@@ -67,12 +67,8 @@ PDFPlot.prototype.getHistogramElements = function () {
 	.domain([-1, 1])
     	.range([0, width]);
 
-    console.log(differenceData);
-
     var histogram = d3.layout.histogram()
 	.bins(x.ticks(noBins))(differenceData);
-
-    console.log(histogram);
 
     var y = d3.scale.linear()
 	.domain([0, d3.max(histogram, function(d) { return d.y; })])
@@ -99,7 +95,7 @@ PDFPlot.prototype.getHistogramElements = function () {
     };
 };
 
-PDFPlot.prototype.getElements = function () {
+Plots.prototype.getPDFElements = function () {
 
     var controlData = this.controlBeta.getPDF(100);
     var testData = this.testBeta.getPDF(100);
@@ -146,7 +142,7 @@ PDFPlot.prototype.getElements = function () {
     };
 };
 
-PDFPlot.prototype.drawHistogram = function () {
+Plots.prototype.drawHistogram = function () {
     var el = this.getHistogramElements();
 
     var svg = d3.select("body").append("svg")
@@ -175,10 +171,6 @@ PDFPlot.prototype.drawHistogram = function () {
 	.enter().append("g")
 	.attr("class", "bar")
 	.attr("transform", function(d) { return "translate(" + el.x(d.x) + ",0)"; });
-	//.attr("transform", function(d) { return "translate(" + el.x(d.x) + "," + el.y(d.y) + ")"; });
-
-    console.log(el);
-    console.log(el.histogram[0].dx);
 
     bar.append("rect")
 	.attr("x", 1)
@@ -191,8 +183,8 @@ PDFPlot.prototype.drawHistogram = function () {
 };
 
 
-PDFPlot.prototype.draw = function () {
-    var d = this.getElements();
+Plots.prototype.drawPDF = function () {
+    var d = this.getPDFElements();
     
     var svg = d3.select("body").append("svg")
 	.attr("width", d.width + d.margin.left + d.margin.right)
@@ -228,10 +220,10 @@ PDFPlot.prototype.draw = function () {
 	.attr("d", d.controlLine)
 	.attr("id", "controlLine");
 
-    this.svg = svg;
+    this.pdfSVG = svg;
 };
 
-PDFPlot.prototype.redrawHistogram = function () {
+Plots.prototype.redrawHistogram = function () {
     var el = this.getHistogramElements();
 
     var svg = this.histogramSVG;
@@ -244,41 +236,42 @@ PDFPlot.prototype.redrawHistogram = function () {
     	.attr("height", function(d) { return el.height - el.y(d.y); });
 };
 
-PDFPlot.prototype.redraw = function () {
+Plots.prototype.redrawPDF = function () {
 
-    var d = this.getElements();
+    var d = this.getPDFElements();
 
-    this.svg.select('#testLine')
+    var svg = this.pdfSVG;
+
+    svg.select('#testLine')
 	.datum(d.testData)
 	.transition()
 	.duration(1000)
         .attr("d", d.testLine);
 
-    this.svg.select('#controlLine')
+    svg.select('#controlLine')
 	.datum(d.controlData)
 	.transition()
 	.duration(1000)
         .attr("d", d.controlLine);
 
-    this.svg.select('.y.axis')
+    svg.select('.y.axis')
 	.transition()
 	.duration(1000)
 	.call(d.yAxis);
 
-    this.svg.select('.x.axis')
+    svg.select('.x.axis')
 	.transition()
 	.call(d.xAxis);
 };
 
-PDFPlot.prototype.updatePrior = function (alpha, beta) {
+Plots.prototype.updatePrior = function (alpha, beta) {
     this.controlBeta = new BetaModel(alpha, beta);
     this.testBeta = new BetaModel(alpha, beta);
 };
 
-PDFPlot.prototype.updatePosterior = function (testSuccesses, testFailures, controlSuccesses, controlFailures) {
+Plots.prototype.updatePosterior = function (testSuccesses, testFailures, controlSuccesses, controlFailures) {
     this.testBeta.update(testSuccesses, testFailures);
     this.controlBeta.update(controlSuccesses, controlFailures);
-    console.log(this.controlBeta);
 };
 
 
@@ -306,25 +299,27 @@ var getInputs = function () {
 };
 
 var initializePlots = function() {
+
     var inputs = getInputs();
-    var pdfplot = new PDFPlot(inputs.priorAlpha, inputs.priorBeta);
-    pdfplot.draw();
-    pdfplot.drawHistogram();
-    window.pdfplot = pdfplot;
+    var plots = new Plots(inputs.priorAlpha, inputs.priorBeta);
+    plots.drawPDF();
+    plots.drawHistogram();
+    window.plots = plots;
 };
 
 initializePlots();
 
 var updatePlots = function() {
+
     var inputs = getInputs();
-    var pdfplot = window.pdfplot;
-    pdfplot.updatePrior(inputs.priorAlpha, inputs.priorBeta);
-    pdfplot.updatePosterior(inputs.testSuccesses,
+    var plots = window.plots;
+    plots.updatePrior(inputs.priorAlpha, inputs.priorBeta);
+    plots.updatePosterior(inputs.testSuccesses,
 			    inputs.testFailures,
 			    inputs.controlSuccesses,
 			    inputs.controlFailures);
-    pdfplot.redraw();
-    pdfplot.redrawHistogram();
+    plots.redrawPDF();
+    plots.redrawHistogram();
 
 };
 
