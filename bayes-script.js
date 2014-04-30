@@ -46,6 +46,59 @@ var PDFPlot = function(alpha, beta) {
     this.testBeta = new BetaModel(alpha, beta);
 };
 
+PDFPlot.prototype.getHistogramElements = function () {
+
+    var noSamples = 1000;
+    var noBins = 50;
+  
+    var controlData = this.controlBeta.getRvs(noSamples);
+    var testData = this.testBeta.getRvs(noSamples);
+    var differenceData = [];
+
+    for (var i=0; i < controlData.length; i++) {
+	differenceData.push(testData[i] - controlData[i]);	
+    };
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 50};
+    var width = 960 - margin.left - margin.right;
+    var height = 500 - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+	.domain([-1, 1])
+    	.range([0, width]);
+
+    console.log(differenceData);
+
+    var histogram = d3.layout.histogram()
+	.bins(x.ticks(noBins))(differenceData);
+
+    console.log(histogram);
+
+    var y = d3.scale.linear()
+	.domain([0, d3.max(histogram, function(d) { return d.y; })])
+	.range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("bottom");
+
+    var yAxis = d3.svg.axis()
+	.scale(y)
+	.orient("left");
+
+    return {
+	"margin": margin,
+	"width": width,
+	"height": height,
+	"xAxis": xAxis,
+	"yAxis": yAxis,
+	"x": x,
+	"y": y,
+	"differenceData": differenceData,
+	"histogram": histogram
+    };
+};
+
 PDFPlot.prototype.getElements = function () {
 
     var controlData = this.controlBeta.getPDF(100);
@@ -93,6 +146,51 @@ PDFPlot.prototype.getElements = function () {
     };
 };
 
+PDFPlot.prototype.drawHistogram = function () {
+    var el = this.getHistogramElements();
+
+    var svg = d3.select("body").append("svg")
+	.attr("width", el.width + el.margin.left + el.margin.right)
+	.attr("height", el.height + el.margin.top + el.margin.bottom)
+	.append("g")
+	.attr("transform", "translate(" + el.margin.left + "," + el.margin.top + ")");
+
+    svg.append("g")
+	.attr("class", "x axis")
+	.attr("transform", "translate(0," + el.height + ")")
+	.call(el.xAxis);
+
+    svg.append("g")
+	.attr("class", "y axis")
+	.call(el.yAxis)
+	.append("text")
+	.attr("transform", "rotate(-90)")
+	.attr("y", 6)
+	.attr("dy", ".71em")
+	.style("text-anchor", "end")
+	.text("Density");
+
+    var bar = svg.selectAll(".bar")
+	.data(el.histogram)
+	.enter().append("g")
+	.attr("class", "bar")
+	.attr("transform", function(d) { return "translate(" + el.x(d.x) + ",0)"; });
+	//.attr("transform", function(d) { return "translate(" + el.x(d.x) + "," + el.y(d.y) + ")"; });
+
+    console.log(el);
+    console.log(el.histogram[0].dx);
+
+    bar.append("rect")
+	.attr("x", 1)
+	.attr("y", function(d) { return el.y(d.y);})
+	.attr("width", el.histogram[0].dx/2 * el.width)
+    	.attr("height", function(d) { return el.height - el.y(d.y); });
+
+    this.histogramSVG = svg;
+
+};
+
+
 PDFPlot.prototype.draw = function () {
     var d = this.getElements();
     
@@ -130,12 +228,20 @@ PDFPlot.prototype.draw = function () {
 	.attr("d", d.controlLine)
 	.attr("id", "controlLine");
 
-    var title = svg.append("text")
-	.attr("class", "title")
-	.attr("dy", ".71em")
-	.text(2000);
-
     this.svg = svg;
+};
+
+PDFPlot.prototype.redrawHistogram = function () {
+    var el = this.getHistogramElements();
+
+    var svg = this.histogramSVG;
+
+    svg.selectAll("rect")
+	.data(el.histogram)
+	.transition()
+	.duration(1000)
+	.attr("y", function(d) { return el.y(d.y);})
+    	.attr("height", function(d) { return el.height - el.y(d.y); });
 };
 
 PDFPlot.prototype.redraw = function () {
@@ -180,7 +286,6 @@ var getNumber = function (x, def) {
     return Number(x);    
 };
 
-
 var getInputs = function () {
     
     var priorAlpha = getNumber(document.getElementById("priorAlpha").value, 10);
@@ -204,6 +309,7 @@ var initializePlots = function() {
     var inputs = getInputs();
     var pdfplot = new PDFPlot(inputs.priorAlpha, inputs.priorBeta);
     pdfplot.draw();
+    pdfplot.drawHistogram();
     window.pdfplot = pdfplot;
 };
 
@@ -218,6 +324,7 @@ var updatePlots = function() {
 			    inputs.controlSuccesses,
 			    inputs.controlFailures);
     pdfplot.redraw();
+    pdfplot.redrawHistogram();
 
 };
 
