@@ -121,13 +121,15 @@ Plots.prototype.getPDFElements = function () {
 	.scale(y)
 	.orient("left");
 
-    var controlLine = d3.svg.line()
+    var controlLine = d3.svg.area()
 	.x(function(d) { return x(d.x); })
-	.y(function(d) { return y(d.y); });
+        .y1(height)
+	.y0(function(d) { return y(d.y); });
 
-    var testLine = d3.svg.line()
+    var testLine = d3.svg.area()
 	.x(function(d) { return x(d.x); })
-	.y(function(d) { return y(d.y); });
+	.y1(height)
+	.y0(function(d) { return y(d.y); });
 
     return {
 	"margin": margin,
@@ -145,7 +147,7 @@ Plots.prototype.getPDFElements = function () {
 Plots.prototype.drawHistogram = function () {
     var el = this.getHistogramElements();
 
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("#histogram").append("svg")
 	.attr("width", el.width + el.margin.left + el.margin.right)
 	.attr("height", el.height + el.margin.top + el.margin.bottom)
 	.append("g")
@@ -164,7 +166,14 @@ Plots.prototype.drawHistogram = function () {
 	.attr("y", 6)
 	.attr("dy", ".71em")
 	.style("text-anchor", "end")
-	.text("Density");
+	.text("Samples");
+
+    svg.append("text")
+        .attr("x", (el.width / 2))             
+        .attr("y", 0 - (el.margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .text("Histogram of test - control probability");
 
     var bar = svg.selectAll(".bar")
 	.data(el.histogram)
@@ -186,7 +195,7 @@ Plots.prototype.drawHistogram = function () {
 Plots.prototype.drawPDF = function () {
     var d = this.getPDFElements();
     
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("#pdfplot").append("svg")
 	.attr("width", d.width + d.margin.left + d.margin.right)
 	.attr("height", d.height + d.margin.top + d.margin.bottom)
 	.append("g")
@@ -202,7 +211,7 @@ Plots.prototype.drawPDF = function () {
 	.call(d.yAxis)
 	.append("text")
 	.attr("transform", "rotate(-90)")
-	.attr("y", 6)
+	.attr("y", 2)
 	.attr("dy", ".71em")
 	.style("text-anchor", "end")
 	.text("Density");
@@ -216,9 +225,16 @@ Plots.prototype.drawPDF = function () {
 
     svg.append("path")
 	.datum(d.controlData)
-	.attr("class", "line")
+	.attr("class", "area")
 	.attr("d", d.controlLine)
 	.attr("id", "controlLine");
+
+    svg.append("text")
+        .attr("x", (d.width / 2))             
+        .attr("y", 0 - (d.margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .text("Test and Control probability density functions");
 
     this.pdfSVG = svg;
 };
