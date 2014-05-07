@@ -281,11 +281,11 @@ Plots.prototype.redrawHistogram = function () {
 
     var percentileOfZero = BetaModel.prototype.percentileOfScore(el.differenceData, 0);
     var testSuccessProbability = document.getElementById('testSuccessProbability');
-    testSuccessProbability.innerHTML = 1.0 - percentileOfZero;
+    testSuccessProbability.innerHTML = Math.round((1.0 - percentileOfZero) * 100) / 100;
 
     var differenceMeanHTML = document.getElementById('differenceMean');
     var differenceMean = BetaModel.prototype.mean(el.differenceData);
-    differenceMeanHTML.innerHTML = differenceMean;
+    differenceMeanHTML.innerHTML = Math.round(100 * differenceMean) / 100;
     
 };
 
