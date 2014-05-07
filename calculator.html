@@ -35,16 +35,19 @@ body {
 <div id="histogram"></div>
 
 
-<input id="priorAlpha" value="10">alpha</input>
-<input id="priorBeta" value="10">beta</input>
+<input id="priorAlpha" value="10" type="number" min="0.1">alpha</input>
+<input id="priorBeta" value="10" type="number" min="0.1">beta</input>
 <br>
-<input id="controlSuccesses" value="0">control successes</input>
-<input id="controlFailures" value="0">control failures</input>
+<input id="controlSuccesses" value="0" type="number" min="0">control successes</input>
+<input id="controlFailures" value="0" type="number" min="0">control failures</input>
 <br>
-<input id="testSuccesses" value="0">test successes</input>
-<input id="testFailures" value="0">test failures</input>
+<input id="testSuccesses" value="0" type="number" min="0">test successes</input>
+<input id="testFailures" value="0" type="number" min="0">test failures</input>
 <br>
 <button id="submit">Submit</button>
+
+Test - control mean estimate: <span id="differenceMean">0</span>
+Probability that test performs better than control: <span id="testSuccessProbability">0.5</span>
 
 <script charset="utf-8" src="bayes-script.js"></script>
 

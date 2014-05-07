@@ -37,6 +37,35 @@ BetaModel.prototype.update = function (successes, failures) {
     this.beta = this.beta + failures;
 };
 
+BetaModel.prototype.percentileOfScore = function(arr, score, kind) {
+  var counter = 0;
+  var len = arr.length;
+  var strict = false;
+  var value, i;
+
+  if (kind === 'strict') strict = true;
+
+  for (i = 0; i < len; i++) {
+    value = arr[i];
+    if ((strict && value < score) ||
+        (!strict && value <= score)) {
+      counter++;
+    }
+  }
+
+  return counter / len;
+};
+
+BetaModel.prototype.mean = function(arr) {
+  var i = 0;
+  var counter = 0;
+
+  for (i = 0; i < arr.length; i++) {
+    counter = counter + arr[i];
+  }
+
+  return counter/i;
+};
 
 // -----------------------------------------------
 
@@ -249,6 +278,15 @@ Plots.prototype.redrawHistogram = function () {
 	.duration(1000)
 	.attr("y", function(d) { return el.y(d.y);})
     	.attr("height", function(d) { return el.height - el.y(d.y); });
+
+    var percentileOfZero = BetaModel.prototype.percentileOfScore(el.differenceData, 0);
+    var testSuccessProbability = document.getElementById('testSuccessProbability');
+    testSuccessProbability.innerHTML = 1.0 - percentileOfZero;
+
+    var differenceMeanHTML = document.getElementById('differenceMean');
+    var differenceMean = BetaModel.prototype.mean(el.differenceData);
+    differenceMeanHTML.innerHTML = differenceMean;
+    
 };
 
 Plots.prototype.redrawPDF = function () {
