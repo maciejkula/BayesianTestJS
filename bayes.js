@@ -2,6 +2,7 @@
 
 var beta = require("beta-js");
 var d3 = require("d3");
+var jStat = require("./jstat.js");
 
 
 var BetaModel = function (alpha, beta) {
@@ -76,8 +77,8 @@ var Plots = function(alpha, beta) {
 
 Plots.prototype.getHistogramElements = function () {
 
-    var noSamples = 1000;
-    var noBins = 50;
+    var noSamples = 5000;
+    var noBins = 200;
 
     var controlData = this.controlBeta.getRvs(noSamples);
     var testData = this.testBeta.getRvs(noSamples);
@@ -125,8 +126,8 @@ Plots.prototype.getHistogramElements = function () {
 
 Plots.prototype.getPDFElements = function () {
 
-    var controlData = this.controlBeta.getPDF(100);
-    var testData = this.testBeta.getPDF(100);
+    var controlData = this.controlBeta.getPDF(1000);
+    var testData = this.testBeta.getPDF(1000);
     var allData = controlData.concat(testData);
     var interpolationMode = 'cardinal';
 
@@ -213,6 +214,8 @@ Plots.prototype.drawHistogram = function () {
 
     this.histogramSVG = svg;
 
+    this.drawSummaryStatistics(el);
+
 };
 
 
@@ -255,6 +258,42 @@ Plots.prototype.drawPDF = function () {
     this.pdfSVG = svg;
 };
 
+
+Plots.prototype.drawTable = function (arr1, arr2) {
+    var tb = '<table id="quantileTable">';
+
+    tb += "<tr>";
+    for (var i=0; i < arr1.length; i++) {
+	tb += ("<td>" + arr1[i] + "</td>");
+    }
+
+    tb += "</tr><tr>";
+    for (var i=0; i < arr1.length; i++) {
+	tb += ("<td>" + (Math.round(100 * arr2[i]) / 100) + "</td>");
+    }
+
+    tb += "</tr></table>"
+
+    return tb;
+};
+
+Plots.prototype.drawSummaryStatistics = function (el) {
+
+    var quantiles = [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975, 0.99]
+    var differenceQuantiles = jStat.jStat.quantiles(el.differenceData, quantiles);
+    var tableElement = document.getElementById('quantileTableElement');
+    tableElement.innerHTML = this.drawTable(quantiles, differenceQuantiles);
+
+    var percentileOfZero = BetaModel.prototype.percentileOfScore(el.differenceData, 0);
+    var testSuccessProbability = document.getElementById('testSuccessProbability');
+    testSuccessProbability.innerHTML = Math.round((1.0 - percentileOfZero) * 100) / 100;
+
+    var differenceMeanHTML = document.getElementById('differenceMean');
+    var differenceMean = BetaModel.prototype.mean(el.differenceData);
+    differenceMeanHTML.innerHTML = Math.round(100 * differenceMean) / 100;
+};
+
+
 Plots.prototype.redrawHistogram = function () {
     var el = this.getHistogramElements();
 
@@ -267,14 +306,7 @@ Plots.prototype.redrawHistogram = function () {
 	.attr("y", function(d) { return el.y(d.y);})
     	.attr("height", function(d) { return el.height - el.y(d.y); });
 
-    var percentileOfZero = BetaModel.prototype.percentileOfScore(el.differenceData, 0);
-    var testSuccessProbability = document.getElementById('testSuccessProbability');
-    testSuccessProbability.innerHTML = Math.round((1.0 - percentileOfZero) * 100) / 100;
-
-    var differenceMeanHTML = document.getElementById('differenceMean');
-    var differenceMean = BetaModel.prototype.mean(el.differenceData);
-    differenceMeanHTML.innerHTML = Math.round(100 * differenceMean) / 100;
-
+    this.drawSummaryStatistics(el);
 };
 
 Plots.prototype.redrawPDF = function () {
