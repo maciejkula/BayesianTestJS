@@ -1,7 +1,7 @@
 
 body {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     font-family: 'Helvetica Neue', sans-serif;
     background: #F1F1F1;
     color: #000;
@@ -13,7 +13,9 @@ h1, h2, h3, h4 {
 
 h1 {
     font-size: 22px;
-    font-weight: 400;
+    font-weight: 500;
+    text-align: center;
+    margin: 20px 0;
 }
 
 h3 {
@@ -33,7 +35,38 @@ h4 {
 }
 
 p {
+    margin: 15px 0;
+    line-height: 22px;
+}
+
+ol {
+    line-height: 22px;
+    list-style: none;
     margin: 0;
+    padding: 0;
+}
+
+ol li {
+    margin: 15px 0;
+    padding: 0 0 0 35px;
+    position: relative;
+}
+
+ol .number {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 19px;
+    text-align: center;
+    border-radius: 15px;
+    background: #E9E9E9;
+    font-weight: 500;
+    color: #333;
 }
 
 /* Form Styling */
@@ -57,6 +90,11 @@ fieldset {
     border: none;
     border-bottom: 1px solid #E9E9E9;
     overflow: hidden;
+    cursor: pointer;
+}
+
+fieldset:hover {
+    background: #F7F7F7;
 }
 
 label {
@@ -78,37 +116,35 @@ input[type="number"] {
     width: 95px;
     float: left;
     font-size: 15px;
+    background: none;
     box-sizing: border-box;
     text-align: right;
     border: none;
     line-height: 30px;
+    cursor: pointer;
 }
 
 input[type="submit"] {
-    border-radius: 2px;
-    padding: 10px 0;
-    width: 100%;
-    background: none;
+    border-radius: 3px;
+    padding: 10px 15px;
+    background: #F7F7F7;
     border: none;
-    border-top: 1px solid #E9E9E9;
-    border-bottom: 1px solid #E9E9E9;
+    border: 1px solid #E9E9E9;
     font-weight: 500;
     cursor: pointer;
     color: #000;
     font-size: 13px;
-    margin: 50px 0 0 0;
+    margin: 50px auto;
     display:block;
 }
 
 input[type="submit"]:hover {
-    color: #000;
-    background: #F7F7F7;
+    color: #555;
 }
 
 input[type="submit"]:active {
-    padding-top: 11px;
-    padding-bottom: 9px;
-    background: #F7F7F7;
+    position: relative;
+    top: 1px;
 }
 
 input:focus {
@@ -130,36 +166,19 @@ input:focus {
 }
 
 /* Preamble Styling */
+.header {
+    padding: 35px 0 25px;
+}
+
 .logo {
-    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.tagline {
+    color: #999;
+    font-size: 15px;
     text-align: center;
-    margin: 35px 0 20px;
-}
-
-.instructions {
-    line-height: 22px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font-size: 14px;
-}
-
-.instructions li {
-    margin-bottom: 10px;
-}
-
-.instructions .number {
-    display: inline-block;
-    margin-right: 10px;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-    line-height: 19px;
-    text-align: center;
-    border-radius: 15px;
-    background: #E9E9E9;
-    font-weight: 500;
-    color: #333;
+    margin-top: 8px;
 }
 
 .note-wrapper {
@@ -200,11 +219,11 @@ input:focus {
 }
 
 .form-group-title.control:before {
-    background: #E93A5E;
+    background: #007AFF;
 }
 
 .form-group-title.test:before {
-    background: #007AFF;
+    background: #E93A5E;
 }
 
 /* Content Styling */
@@ -216,8 +235,16 @@ input:focus {
     border-radius:0 3px 3px 0;
 }
 
+.content.full-width {
+    margin-left: 0;
+    width: 940px;
+    border-radius: 3px;
+    background: #FFF;
+    padding: 20px 20px 40px 40px;
+}
+
 .chart {
-    margin: 20px 0 0;
+    margin: 10px 0 0 0;
 }
 
 .chart + .chart {
@@ -233,7 +260,7 @@ input:focus {
     font-size: 13px;
     text-align: center;
     margin: 0 0 20px;
-    color: #c9c9c9;
+    color: #999;
 }
 
 .chart text { /* Axis labels */
@@ -249,6 +276,18 @@ input:focus {
     stroke-width: 1px;
     shape-rendering: crispEdges;
     fill: none;
+}
+
+/* Columns */
+.columns {
+    overflow: hidden;
+}
+
+.column {
+    box-sizing: border-box;
+    padding-right: 30px;
+    width: 50%;
+    float:left;
 }
 
 
@@ -274,4 +313,29 @@ input:focus {
 }
 #histogram .bar:nth-child(2n){
     opacity: 0.95;
+}
+
+
+/* Quantile Table */
+#quantileTable {
+    border: none;
+    border-collapse: collapse;
+}
+
+#quantileTable td {
+    cellspacing: 0px;
+    border-right : 1px solid #000;
+    padding: 10px;
+}
+
+.table-row-title {
+    font-weight: 500;
+}
+
+#quantileTable td:last-child {
+    border-right: none;
+}
+
+#quantileTable tr:nth-child(2n) {
+    border-top: 1px solid #000;
 }

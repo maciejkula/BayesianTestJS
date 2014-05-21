@@ -2,7 +2,7 @@
 
 var beta = require("beta-js");
 var d3 = require("d3");
-var jStat = require("./jstat.js");
+var jStat = require("./libs/jstat.js");
 
 
 var BetaModel = function (alpha, beta) {
@@ -260,19 +260,21 @@ Plots.prototype.drawPDF = function () {
 
 
 Plots.prototype.drawTable = function (arr1, arr2) {
-    var tb = '<table id="quantileTable">';
+    var tb = '';
 
     tb += "<tr>";
+    tb += "<td class=\"table-row-title\">Percentiles</td>";
     for (var i=0; i < arr1.length; i++) {
-	tb += ("<td>" + arr1[i] + "</td>");
+	tb += ("<td>" + arr1[i] * 100 + "%</td>");
     }
 
     tb += "</tr><tr>";
+    tb += "<td class=\"table-row-title\">Value</td>";
     for (var i=0; i < arr1.length; i++) {
 	tb += ("<td>" + (Math.round(100 * arr2[i]) / 100) + "</td>");
     }
 
-    tb += "</tr></table>"
+    tb += "</tr>"
 
     return tb;
 };
@@ -281,7 +283,7 @@ Plots.prototype.drawSummaryStatistics = function (el) {
 
     var quantiles = [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975, 0.99]
     var differenceQuantiles = jStat.jStat.quantiles(el.differenceData, quantiles);
-    var tableElement = document.getElementById('quantileTableElement');
+    var tableElement = document.getElementById('quantileTable');
     tableElement.innerHTML = this.drawTable(quantiles, differenceQuantiles);
 
     var percentileOfZero = BetaModel.prototype.percentileOfScore(el.differenceData, 0);
