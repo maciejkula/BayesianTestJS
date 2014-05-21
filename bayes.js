@@ -78,18 +78,18 @@ Plots.prototype.getHistogramElements = function () {
 
     var noSamples = 1000;
     var noBins = 50;
-  
+
     var controlData = this.controlBeta.getRvs(noSamples);
     var testData = this.testBeta.getRvs(noSamples);
     var differenceData = [];
 
     for (var i=0; i < controlData.length; i++) {
-	differenceData.push(testData[i] - controlData[i]);	
+	differenceData.push(testData[i] - controlData[i]);
     };
 
     var margin = {top: 20, right: 20, bottom: 30, left: 50};
-    var width = 960 - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
+    var width = 690 - margin.left - margin.right;
+    var height = 350 - margin.top - margin.bottom;
 
     var x = d3.scale.linear()
 	.domain([-1, 1])
@@ -128,10 +128,11 @@ Plots.prototype.getPDFElements = function () {
     var controlData = this.controlBeta.getPDF(100);
     var testData = this.testBeta.getPDF(100);
     var allData = controlData.concat(testData);
+    var interpolationMode = 'cardinal';
 
     var margin = {top: 20, right: 20, bottom: 30, left: 50};
-    var width = 960 - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
+    var width = 690 - margin.left - margin.right;
+    var height = 350 - margin.top - margin.bottom;
 
     var x = d3.scale.linear()
 	.domain(d3.extent(allData, function(d) { return d.x; }))
@@ -152,12 +153,14 @@ Plots.prototype.getPDFElements = function () {
     var controlLine = d3.svg.area()
 	.x(function(d) { return x(d.x); })
         .y1(height)
-	.y0(function(d) { return y(d.y); });
+	.y0(function(d) { return y(d.y); })
+    .interpolate(interpolationMode);
 
     var testLine = d3.svg.area()
 	.x(function(d) { return x(d.x); })
 	.y1(height)
-	.y0(function(d) { return y(d.y); });
+	.y0(function(d) { return y(d.y); })
+    .interpolate(interpolationMode);
 
     return {
 	"margin": margin,
@@ -196,13 +199,6 @@ Plots.prototype.drawHistogram = function () {
 	.style("text-anchor", "end")
 	.text("Samples");
 
-    svg.append("text")
-        .attr("x", (el.width / 2))             
-        .attr("y", 0 - (el.margin.top / 2))
-        .attr("text-anchor", "middle")  
-        .style("font-size", "16px") 
-        .text("Histogram of test - control probability");
-
     var bar = svg.selectAll(".bar")
 	.data(el.histogram)
 	.enter().append("g")
@@ -222,7 +218,7 @@ Plots.prototype.drawHistogram = function () {
 
 Plots.prototype.drawPDF = function () {
     var d = this.getPDFElements();
-    
+
     var svg = d3.select("#pdfplot").append("svg")
 	.attr("width", d.width + d.margin.left + d.margin.right)
 	.attr("height", d.height + d.margin.top + d.margin.bottom)
@@ -245,7 +241,6 @@ Plots.prototype.drawPDF = function () {
 	.text("Density");
 
     svg.append("path")
-	.style("fill", "red")
 	.datum(d.testData)
 	.attr("class", "line")
 	.attr("d", d.testLine)
@@ -256,13 +251,6 @@ Plots.prototype.drawPDF = function () {
 	.attr("class", "area")
 	.attr("d", d.controlLine)
 	.attr("id", "controlLine");
-
-    svg.append("text")
-        .attr("x", (d.width / 2))             
-        .attr("y", 0 - (d.margin.top / 2))
-        .attr("text-anchor", "middle")  
-        .style("font-size", "16px") 
-        .text("Test and Control probability density functions");
 
     this.pdfSVG = svg;
 };
@@ -286,7 +274,7 @@ Plots.prototype.redrawHistogram = function () {
     var differenceMeanHTML = document.getElementById('differenceMean');
     var differenceMean = BetaModel.prototype.mean(el.differenceData);
     differenceMeanHTML.innerHTML = Math.round(100 * differenceMean) / 100;
-    
+
 };
 
 Plots.prototype.redrawPDF = function () {
@@ -329,11 +317,11 @@ Plots.prototype.updatePosterior = function (testSuccesses, testFailures, control
 
 
 var getNumber = function (x, def) {
-    return Number(x);    
+    return Number(x);
 };
 
 var getInputs = function () {
-    
+
     var priorAlpha = getNumber(document.getElementById("priorAlpha").value, 10);
     var priorBeta = getNumber(document.getElementById("priorBeta").value, 10);
     var controlSuccesses = getNumber(document.getElementById("controlSuccesses").value, 10);
@@ -377,8 +365,9 @@ var updatePlots = function() {
 };
 
 var bindInputs = function() {
-    document.getElementById("submit").onclick = function() {
-	updatePlots();
+    document.getElementById("form").onsubmit = function(event) {
+    	event.preventDefault();
+        updatePlots();
     };
 };
 
