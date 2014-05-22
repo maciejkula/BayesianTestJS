@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Bayesian A/B Test Calculator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,7 +18,7 @@
         <h3>Need Help?</h3>
 
         <p class="note">
-            See <a href="#explanation">here</a> or read more about Bayesian inference in A/B testing at our blog at <a href="#">lorem ipsum</a>.
+            See <a href="#explanation">here</a> or read more about Bayesian inference in A/B testing at our <a href="/data/2014/05/10/bayesian-ab-testing/">blog</a>.
         </p>
         <p class="note">
             Made at <a href="http://www.lyst.com">Lyst</a>
@@ -49,12 +49,12 @@
                 <h4 class="form-group-title">Prior Parameters</h4>
                 <fieldset>
                     <label for="priorAlpha">Alpha</label>
-                    <input id="priorAlpha" value="10" type="number" step="0.1" min="0.1" placeholder="> 0.1" />
+                    <input id="priorAlpha" value="10" type="number" step="0.1"  min="0.1" placeholder=">= 0" />
                 </fieldset>
 
                 <fieldset>
                     <label for="priorBeta">Beta</label>
-                    <input id="priorBeta" value="10" type="number" step="0.1" min="0.1" placeholder="> 0.1" />
+                    <input id="priorBeta" value="10" type="number" step="0.1" min="0.1" placeholder=">= 0" />
                 </fieldset>
             </div>
 
@@ -62,12 +62,12 @@
                 <h4 class="form-group-title control">Control Results</h4>
                 <fieldset>
                     <label for="controlSuccesses">Successes</label>
-                    <input id="controlSuccesses" value="50" type="number" min="0" placeholder=">= 0" />
+                    <input id="controlSuccesses" value="0" type="number" min="0" placeholder=">= 0" />
                 </fieldset>
 
                 <fieldset>
                     <label for="controlFailures">Failures</label>
-                    <input id="controlFailures" value="50" type="number" min="0" placeholder=">= 0" />
+                    <input id="controlFailures" value="0" type="number" min="0" placeholder=">= 0" />
                 </fieldset>
             </div>
 
@@ -75,16 +75,17 @@
                 <h4 class="form-group-title test">Test Results</h4>
                 <fieldset>
                     <label for="testSuccesses">Successes</label>
-                    <input id="testSuccesses" value="40" type="number" min="0" placeholder=">= 0" />
+                    <input id="testSuccesses" value="0" type="number" min="0" placeholder=">= 0" />
                 </fieldset>
 
                 <fieldset>
                     <label for="testFailures">Failures</label>
-                    <input id="testFailures" value="60" type="number" min="0" placeholder=">= 0" />
+                    <input id="testFailures" value="0" type="number" min="0" placeholder=">= 0" />
                 </fieldset>
             </div>
 
             <input type="submit" value="Save Data & Plot" />
+            <input type="reset" value="Reset" />
         </form>
     </div>
 
@@ -107,7 +108,7 @@
             <p class="chart-description">Posterior probability that the difference lies below the value x.</p>
             <table id="quantileTable"><!-- Generated --></table>
             <p>
-                The average difference between test and control is: <span id="differenceMean">0</span>. The probability that test performs better than control: <span id="testSuccessProbability">0.5</span>
+                The average difference between test and control is: <span id="differenceMean">0</span>. The probability that test performs better: <span id="testSuccessProbability">0.5</span>
             </p>
         </div>
 

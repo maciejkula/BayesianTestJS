@@ -147,6 +147,29 @@ input[type="submit"]:active {
     top: 1px;
 }
 
+input[type="reset"] {
+    border-radius: 3px;
+    padding: 10px 15px;
+    background: #F7F7F7;
+    border: none;
+    border: 1px solid #E9E9E9;
+    font-weight: 500;
+    cursor: pointer;
+    color: #000;
+    font-size: 13px;
+    margin: 50px auto;
+    display:block;
+}
+
+input[type="reset"]:hover {
+    color: #555;
+}
+
+input[type="reset"]:active {
+    position: relative;
+    top: 1px;
+}
+
 input:focus {
     outline: none;
 }
