@@ -42,9 +42,20 @@ module.exports = function(grunt) {
         },
 
         watch : {
-            build : {
-                files : ['src/**'],
-                build : ['build'],
+            css : {
+                files : ['src/style.css'],
+                tasks : ['cssmin:build']
+            },
+            js : {
+                files : ['src/bayes.js'],
+                tasks : [
+                    'browserify:build',
+                    'uglify:build'
+                ]
+            },
+            html : {
+                files : ['src/index.html'],
+                tasks : ['copy:build']
             }
         }
     });
