@@ -23,6 +23,9 @@
         <p class="note">
             Made at <a href="http://www.lyst.com">Lyst</a>
         </p>
+        <p class="note">
+            Find this on <a href="http://github.com/maciejkula/BayesianTestJS">Github</a>
+        </p>
     </div>
 
     <div class="content">
@@ -132,8 +135,8 @@
             <div class="column">
                 <p>This simple calculator uses the Beta-Bernoulli model (a binary outcome model, where the prior for the success probability is a Beta distribution) applied in the A/B testing context, where the goal of inference is understanding the probability that the test group performs better than the control group.</p>
                 <p>Bayesian inference consists in first specifying a prior belief about what effects are likely, and then updating the prior with incoming data.</p>
-                <p>For example, if our conversion rate is 5%, we may say that it's reasonably likely that a change we want to test could improve that by 5 percentage points &mdash; but that it is most likely that the change will have no effect, and that it is entirely unlikely that the conversion rate will shoot up to 30% (after all, we are only making a small change).</p>
-                <p>As the data start coming in, we start updating our beliefs. If the incoming data points point at a an improvement in the conversion rate, we start moving our estimate of the effect from the prior upwards; the more data we collect, the more confident we are in it and the further we can move away from our prior. The end result is what is called the posterior &mdash; a probability distribution describing the likely effect from our treatment.</p>
+                <p>For example, if our conversion rate is 5%, we may say that it's reasonably likely that a change we want to test could improve that by 5 percentage points&mdash;but that it is most likely that the change will have no effect, and that it is entirely unlikely that the conversion rate will shoot up to 30% (after all, we are only making a small change).</p>
+                <p>As the data start coming in, we start updating our beliefs. If the incoming data points point to an improvement in the conversion rate, we start moving our estimate of the effect from the prior upwards; the more data we collect, the more confident we are in it and the further we can move away from our prior. The end result is what is called the posterior&mdash;a probability distribution describing the likely effect from our treatment.</p>
             </div>
             <div class="column">
                 <ol>
